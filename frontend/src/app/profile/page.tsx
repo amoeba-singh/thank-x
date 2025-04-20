@@ -4,18 +4,19 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { 
-  Abstraxion, 
-  useAbstraxionAccount, 
-  useAbstraxionSigningClient, 
+import {
+  Abstraxion,
+  useAbstraxionAccount,
+  useAbstraxionSigningClient,
   useAbstraxionClient,
-  useModal 
+  useModal
 } from "@burnt-labs/abstraxion";
 import { Button } from "@burnt-labs/ui";
 import { FaEdit, FaShareAlt, FaCopy, FaCheck, FaExternalLinkAlt, FaWallet, FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import { getXionBalance } from "@/utils/tokenTransfer";
 import ImageUploader from "@/components/ImageUploader";
 import EditProfileButton from "@/components/EditProfileButton";
+import { set } from "@cloudinary/url-gen/actions/variable";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_DEPLOYED_CONTRACT_ADDRESS || "";
 
@@ -24,7 +25,7 @@ export default function ProfilePage() {
   const { data: account } = useAbstraxionAccount();
   const { client: queryClient } = useAbstraxionClient();
   const [, setShowModal] = useModal();
-  
+
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -33,18 +34,19 @@ export default function ProfilePage() {
   const [stats, setStats] = useState<any>(null);
   const [balance, setBalance] = useState<string>("0");
   const [loadingBalance, setLoadingBalance] = useState(false);
-  
+
   const [activeTab, setActiveTab] = useState("received");
   const [copied, setCopied] = useState(false);
+  const [addressCopy, setAddressCopy] = useState(false);
   const [profileChecked, setProfileChecked] = useState(false);
 
   // Fetch data only once when wallet is connected and client is ready
   const fetchData = useCallback(async () => {
     if (!queryClient || !account?.bech32Address) return;
-    
+
     try {
       setLoading(true);
-      
+
       // Fetch balance
       try {
         const balanceAmount = await getXionBalance(queryClient, account.bech32Address);
@@ -52,43 +54,43 @@ export default function ProfilePage() {
       } catch (error) {
         console.error("Error fetching balance:", error);
       }
-      
+
       // Fetch profile
       try {
         const response = await queryClient.queryContractSmart(CONTRACT_ADDRESS, {
           get_profile_by_wallet: { wallet: account.bech32Address }
         });
-        
+
         if (response && response.profile) {
           setProfile(response.profile);
-          
+
           // Fetch tips and stats for the profile
           try {
             const username = response.profile.username;
-            
+
             // Fetch tips received
             const receivedResponse = await queryClient.queryContractSmart(CONTRACT_ADDRESS, {
               get_tips_received: { username, limit: 20 }
             });
-            
+
             if (receivedResponse && receivedResponse.tips) {
               setTipsReceived(receivedResponse.tips);
             }
-            
+
             // Fetch tips sent
             const sentResponse = await queryClient.queryContractSmart(CONTRACT_ADDRESS, {
               get_tips_sent: { username, limit: 20 }
             });
-            
+
             if (sentResponse && sentResponse.tips) {
               setTipSent(sentResponse.tips);
             }
-            
+
             // Fetch user stats
             const statsResponse = await queryClient.queryContractSmart(CONTRACT_ADDRESS, {
               get_user_stats: { username }
             });
-            
+
             if (statsResponse && statsResponse.stats) {
               setStats(statsResponse.stats);
             }
@@ -118,7 +120,7 @@ export default function ProfilePage() {
   // Handle copy profile link
   const copyProfileLink = () => {
     if (!profile?.username) return;
-    
+
     const url = `${window.location.origin}/tip/${profile.username}`;
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
@@ -161,7 +163,7 @@ export default function ProfilePage() {
           </div>
           <h1 className="text-2xl font-bold mb-4 text-white">Connect Your Wallet</h1>
           <p className="mb-6 text-gray-300">Please connect your wallet to view your profile.</p>
-          <button 
+          <button
             onClick={() => setShowModal(true)}
             className="group relative overflow-hidden rounded-full bg-indigo-600 px-8 py-4 text-white transition-all hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-600/20 active:scale-95"
           >
@@ -169,7 +171,7 @@ export default function ProfilePage() {
             <span className="relative z-10">Connect Wallet</span>
           </button>
         </div>
-        
+
         {/* Abstraxion modal */}
         <Abstraxion onClose={() => setShowModal(false)} />
       </div>
@@ -228,8 +230,8 @@ export default function ProfilePage() {
       {/* Banner */}
       <div className="relative h-64 md:h-80 w-full bg-[#131929] overflow-hidden">
         {profile.banner_image ? (
-          <Image 
-            src={profile.banner_image} 
+          <Image
+            src={profile.banner_image}
             alt={`${profile.name}'s banner`}
             fill
             style={{ objectFit: 'cover' }}
@@ -237,13 +239,13 @@ export default function ProfilePage() {
             className="opacity-90"
           />
         ) : null}
-        
+
         <div className="absolute inset-0 bg-[#0a0e17] opacity-20"></div>
-        
+
         <div className="absolute top-4 right-4 z-10 flex gap-2">
           <EditProfileButton profile={profile} />
-          
-          <button 
+
+          <button
             className="bg-[#0a0e17]/80 hover:bg-[#0a0e17] text-white border border-indigo-500 rounded-full px-5 py-2 flex items-center backdrop-blur-sm transition-all"
             onClick={copyProfileLink}
           >
@@ -261,7 +263,7 @@ export default function ProfilePage() {
           </button>
         </div>
       </div>
-      
+
       {/* Profile Info */}
       <div className="relative max-w-5xl mx-auto -mt-24 px-4">
         <div className="bg-[#131929] rounded-[32px] shadow-[0_8px_32px_rgba(31,41,55,0.2)] p-6 md:p-8 border border-[#1d293e]">
@@ -270,8 +272,8 @@ export default function ProfilePage() {
             <div className="relative -mt-24 mb-4 md:mb-0 md:mr-6">
               <div className="w-32 h-32 md:w-40 md:h-40 bg-[#0a0e17] rounded-full border-4 border-[#131929] overflow-hidden shadow-[0_0_20px_rgba(79,70,229,0.4)]">
                 {profile.profile_picture ? (
-                  <Image 
-                    src={profile.profile_picture} 
+                  <Image
+                    src={profile.profile_picture}
                     alt={profile.name}
                     fill
                     style={{ objectFit: 'cover' }}
@@ -284,7 +286,7 @@ export default function ProfilePage() {
                 )}
               </div>
             </div>
-            
+
             {/* Profile Details */}
             <div className="flex-1">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -292,7 +294,7 @@ export default function ProfilePage() {
                   <h1 className="text-3xl font-bold text-white">{profile.name}</h1>
                   <p className="text-indigo-400 text-lg">@{profile.username}</p>
                 </div>
-                
+
                 <div className="mt-4 md:mt-0">
                   <Link href={`/tip/${profile.username}`} target="_blank" rel="noopener noreferrer">
                     <button className="group relative overflow-hidden rounded-full bg-[#1d293e] px-5 py-2 text-white transition-all hover:bg-[#252f44] active:scale-95 border border-indigo-500/30">
@@ -308,17 +310,30 @@ export default function ProfilePage() {
 
               {/* Bech32 Address */}
               <div className="mt-4 p-4 bg-[#0d121f] rounded-[16px] border border-[#1d293e]">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between">
+                  <div className="flex items-center mb-2 sm:mb-0">
                     <div className="bg-indigo-500/20 p-2 rounded-full mr-3">
                       <FaWallet className="text-indigo-400" />
                     </div>
                     <span className="font-medium text-gray-300">Wallet Address:</span>
                   </div>
-                  <span className="text-sm font-bold text-white">{account?.bech32Address}</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                    <div className="overflow-x-auto max-w-full">
+                      <span className="text-sm font-bold text-white break-all">{account?.bech32Address}</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(account?.bech32Address || "");
+                        setAddressCopy(true);
+                      }}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded text-xs mt-2 sm:mt-0"
+                    >
+                      {addressCopy ? "Copy" : "Copied"}
+                    </button>
+                  </div>
                 </div>
               </div>
-              
+
               {/* XION Balance */}
               <div className="mt-4 p-4 bg-[#0d121f] rounded-[16px] border border-[#1d293e]">
                 <div className="flex items-center justify-between">
@@ -328,7 +343,7 @@ export default function ProfilePage() {
                     </div>
                     <span className="font-medium text-gray-300">Your XION Balance:</span>
                   </div>
-                  
+
                   {loadingBalance ? (
                     <div className="animate-pulse">Loading...</div>
                   ) : (
@@ -336,19 +351,19 @@ export default function ProfilePage() {
                   )}
                 </div>
               </div>
-              
+
               {profile.bio && (
                 <div className="mt-4">
                   <p className="whitespace-pre-line text-gray-300">{profile.bio}</p>
                 </div>
               )}
-              
+
               {/* Share Profile Link */}
               <div className="mt-6 p-3 bg-[#0d121f] rounded-[16px] border border-[#1d293e] flex items-center justify-between">
                 <span className="text-sm text-gray-300 truncate pr-2">
                   {`${typeof window !== "undefined" ? window.location.origin : ""}/tip/${profile.username}`}
                 </span>
-                <button 
+                <button
                   className="bg-[#1d293e] hover:bg-[#252f44] text-white p-2 rounded-full"
                   onClick={copyProfileLink}
                 >
@@ -357,7 +372,7 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-          
+
           {/* Stats */}
           {stats && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 p-6 bg-[#0d121f] rounded-[24px] border border-[#1d293e]">
@@ -379,39 +394,37 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
-          
+
           {/* Tabs */}
           <div className="mt-8 border-b border-[#1d293e]">
             <div className="flex space-x-8">
               <button
                 onClick={() => setActiveTab("received")}
-                className={`pb-4 text-sm font-medium ${
-                  activeTab === "received"
-                    ? "border-b-2 border-indigo-500 text-indigo-400"
-                    : "text-gray-400 hover:text-white"
-                }`}
+                className={`pb-4 text-sm font-medium ${activeTab === "received"
+                  ? "border-b-2 border-indigo-500 text-indigo-400"
+                  : "text-gray-400 hover:text-white"
+                  }`}
               >
                 Tips Received
               </button>
               <button
                 onClick={() => setActiveTab("sent")}
-                className={`pb-4 text-sm font-medium ${
-                  activeTab === "sent"
-                    ? "border-b-2 border-indigo-500 text-indigo-400"
-                    : "text-gray-400 hover:text-white"
-                }`}
+                className={`pb-4 text-sm font-medium ${activeTab === "sent"
+                  ? "border-b-2 border-indigo-500 text-indigo-400"
+                  : "text-gray-400 hover:text-white"
+                  }`}
               >
                 Tips Sent
               </button>
             </div>
           </div>
-          
+
           {/* Tips Content */}
           <div className="mt-6">
             {activeTab === "received" ? (
               <>
                 <h2 className="text-xl font-bold mb-4 text-white">Tips You've Received</h2>
-                
+
                 {tipsReceived.length > 0 ? (
                   <div className="space-y-4">
                     {tipsReceived.map((tip, index) => (
@@ -452,7 +465,7 @@ export default function ProfilePage() {
             ) : (
               <>
                 <h2 className="text-xl font-bold mb-4 text-white">Tips You've Sent</h2>
-                
+
                 {tipSent.length > 0 ? (
                   <div className="space-y-4">
                     {tipSent.map((tip, index) => (
@@ -505,7 +518,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-      
+
       {/* Abstraxion modal */}
       <Abstraxion onClose={() => setShowModal(false)} />
     </div>

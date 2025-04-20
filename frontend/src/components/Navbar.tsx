@@ -14,10 +14,17 @@ const Navbar = () => {
   const [, setShowModal] = useModal();
   const [profileData, setProfileData] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+
   // Function to handle wallet connection
   const handleConnect = () => {
     setShowModal(true);
+  };
+
+  const handleDisconnect = () => {
+    localStorage.removeItem("xion-authz-granter-account");
+    localStorage.removeItem("xion-authz-temp-account");
+    window.location.reload();
+    router.push("/");
   };
 
   // Close mobile menu when route changes
@@ -42,41 +49,38 @@ const Navbar = () => {
             </div>
           </Link>
         </div>
-        
+
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-1">
-          <Link 
-            href="/" 
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-              isActive('/') 
-                ? 'bg-indigo-500/20 text-indigo-400' 
-                : 'text-gray-400 hover:text-white hover:bg-[#1d293e]'
-            } flex items-center`}
+          <Link
+            href="/"
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${isActive('/')
+              ? 'bg-indigo-500/20 text-indigo-400'
+              : 'text-gray-400 hover:text-white hover:bg-[#1d293e]'
+              } flex items-center`}
           >
             <FaHome className="mr-2" />
             <span>Home</span>
           </Link>
-          
-          <Link 
-            href="/discover" 
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-              isActive('/discover') 
-                ? 'bg-indigo-500/20 text-indigo-400' 
-                : 'text-gray-400 hover:text-white hover:bg-[#1d293e]'
-            } flex items-center`}
+
+          <Link
+            href="/discover"
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${isActive('/discover')
+              ? 'bg-indigo-500/20 text-indigo-400'
+              : 'text-gray-400 hover:text-white hover:bg-[#1d293e]'
+              } flex items-center`}
           >
             <FaCompass className="mr-2" />
             <span>Discover</span>
           </Link>
-          
+
           {account?.bech32Address ? (
-            <Link 
-              href="/profile" 
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                isActive('/profile') 
-                  ? 'bg-indigo-500/20 text-indigo-400' 
-                  : 'text-gray-400 hover:text-white hover:bg-[#1d293e]'
-              } flex items-center`}
+            <Link
+              href="/profile"
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${isActive('/profile')
+                ? 'bg-indigo-500/20 text-indigo-400'
+                : 'text-gray-400 hover:text-white hover:bg-[#1d293e]'
+                } flex items-center`}
             >
               <FaUser className="mr-2" />
               <span>My Profile</span>
@@ -84,13 +88,11 @@ const Navbar = () => {
           ) : null}
 
           {account?.bech32Address ? (
-            <div className="flex items-center space-x-2 ml-2">
-              <div className="px-4 py-1 bg-[#131929] rounded-full border border-[#1d293e] text-xs text-gray-300">
-                {account.bech32Address.substring(0, 6)}...{account.bech32Address.substring(account.bech32Address.length - 4)}
-              </div>
+            <div className="group relative overflow-hidden rounded-full bg-indigo-600 px-5 py-2 text-white transition-all hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-600/20 active:scale-95">
+              <button onClick={handleDisconnect}>Disconnect</button>
             </div>
           ) : (
-            <button 
+            <button
               onClick={handleConnect}
               className="group relative overflow-hidden rounded-full bg-indigo-600 px-5 py-2 text-white transition-all hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-600/20 active:scale-95"
             >
@@ -102,7 +104,7 @@ const Navbar = () => {
 
         {/* Mobile menu button */}
         <div className="md:hidden">
-          <button 
+          <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="text-gray-400 hover:text-white focus:outline-none"
           >
@@ -114,44 +116,52 @@ const Navbar = () => {
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
         <div className="md:hidden mt-4 bg-[#131929] rounded-xl border border-[#1d293e] p-2 overflow-hidden animate-fade-in-down">
-          <Link 
-            href="/" 
-            className={`block px-4 py-2 rounded-lg text-sm font-medium mb-1 ${
-              isActive('/') 
-                ? 'bg-indigo-500/20 text-indigo-400' 
-                : 'text-gray-400 hover:text-white hover:bg-[#0d121f]'
-            } flex items-center`}
+          <Link
+            href="/"
+            className={`block px-4 py-2 rounded-lg text-sm font-medium mb-1 ${isActive('/')
+              ? 'bg-indigo-500/20 text-indigo-400'
+              : 'text-gray-400 hover:text-white hover:bg-[#0d121f]'
+              } flex items-center`}
           >
             <FaHome className="mr-2" />
             <span>Home</span>
           </Link>
-          
-          <Link 
-            href="/discover" 
-            className={`block px-4 py-2 rounded-lg text-sm font-medium mb-1 ${
-              isActive('/discover') 
-                ? 'bg-indigo-500/20 text-indigo-400' 
-                : 'text-gray-400 hover:text-white hover:bg-[#0d121f]'
-            } flex items-center`}
+
+          <Link
+            href="/discover"
+            className={`block px-4 py-2 rounded-lg text-sm font-medium mb-1 ${isActive('/discover')
+              ? 'bg-indigo-500/20 text-indigo-400'
+              : 'text-gray-400 hover:text-white hover:bg-[#0d121f]'
+              } flex items-center`}
           >
             <FaCompass className="mr-2" />
             <span>Discover</span>
           </Link>
-          
+
           {account?.bech32Address ? (
-            <Link 
-              href="/profile" 
-              className={`block px-4 py-2 rounded-lg text-sm font-medium mb-1 ${
-                isActive('/profile') 
-                  ? 'bg-indigo-500/20 text-indigo-400' 
-                  : 'text-gray-400 hover:text-white hover:bg-[#0d121f]'
-              } flex items-center`}
-            >
-              <FaUser className="mr-2" />
-              <span>My Profile</span>
-            </Link>
+            <>
+              <Link
+                href="/profile"
+                className={`block px-4 py-2 rounded-lg text-sm font-medium mb-1 ${isActive('/profile')
+                    ? 'bg-indigo-500/20 text-indigo-400'
+                    : 'text-gray-400 hover:text-white hover:bg-[#0d121f]'
+                  } flex items-center`}
+              >
+                <FaUser className="mr-2" />
+                <span>My Profile</span>
+              </Link>
+
+
+              <button
+                onClick={handleDisconnect}
+                className="w-full text-left px-4 py-2 rounded-lg text-sm font-medium mb-1 bg-indigo-600 text-white hover:bg-indigo-700 flex items-center"
+              >
+                <span>Disconnect</span>
+              </button>
+            </>
+
           ) : (
-            <button 
+            <button
               onClick={handleConnect}
               className="w-full text-left px-4 py-2 rounded-lg text-sm font-medium mb-1 bg-indigo-600 text-white hover:bg-indigo-700 flex items-center"
             >
@@ -163,7 +173,7 @@ const Navbar = () => {
           )}
         </div>
       )}
-      
+
       {/* Abstraxion modal */}
       <Abstraxion onClose={() => setShowModal(false)} />
     </nav>
